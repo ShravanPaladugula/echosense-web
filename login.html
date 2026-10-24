@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sign in · EchoSense</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@200..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="auth">
+    <aside class="auth-side">
+      <a class="logo" href="index.html"><img class="logo-mark" src="img/logo.svg" alt=""> EchoSense</a>
+      <div>
+        <div id="sideRadar" style="max-width:320px" aria-hidden="true"></div>
+        <h2 class="display">Your settings, your calibration.</h2>
+        <p class="muted" style="max-width:44ch">Your account keeps your motor strengths, front direction and session history in this browser, ready whenever you connect your cap.</p>
+      </div>
+      <span class="micro">Stored on this computer only &middot; nothing leaves your browser</span>
+    </aside>
+    <main class="auth-main">
+      <div class="auth-box">
+        <h1 id="title">Welcome back</h1>
+        <p class="muted" id="subtitle">Sign in to open your dashboard.</p>
+        <div class="tabs" role="tablist">
+          <button id="tabIn" class="active" role="tab">Sign in</button>
+          <button id="tabUp" role="tab">Create account</button>
+        </div>
+        <form id="form" novalidate>
+          <label class="field" id="nameField" hidden><span>Name</span><input id="name" type="text" autocomplete="name"></label>
+          <label class="field"><span>Email</span><input id="email" type="email" autocomplete="email" required></label>
+          <label class="field"><span>Password</span><input id="password" type="password" autocomplete="current-password" required></label>
+          <div class="err" id="err" role="alert"></div>
+          <button class="btn primary" style="width:100%;margin-top:6px" id="submit">Sign in</button>
+        </form>
+        <p class="faint small" style="margin-top:20px;text-align:center">Just looking? <a href="dashboard.html?demo=1">Open the demo without an account</a></p>
+      </div>
+    </main>
+  </div>
+  <script type="module">
+    import { signIn, signUp, currentUser } from './js/auth.js';
+    import { createRadar } from './js/radar.js';
+    import { DemoDevice } from './js/device.js';
+
+    if (currentUser()) location.replace('dashboard.html');
+
+    const $ = (id) => document.getElementById(id);
+    let mode = new URLSearchParams(location.search).get('mode') === 'signup' ? 'up' : 'in';
+    function setMode(m) {
+      mode = m;
+      $('tabIn').classList.toggle('active', m === 'in');
+      $('tabUp').classList.toggle('active', m === 'up');
+      $('nameField').hidden = m === 'in';
+      $('title').textContent = m === 'in' ? 'Welcome back' : 'Create your account';
+      $('subtitle').textContent = m === 'in' ? 'Sign in to open your dashboard.' : 'It takes ten seconds.';
+      $('submit').textContent = m === 'in' ? 'Sign in' : 'Create account';
+      $('password').autocomplete = m === 'in' ? 'current-password' : 'new-password';
+      $('err').textContent = '';
+    }
+    $('tabIn').onclick = () => setMode('in');
+    $('tabUp').onclick = () => setMode('up');
+    setMode(mode);
+
+    $('form').onsubmit = async (e) => {
+      e.preventDefault();
+      $('err').textContent = '';
+      $('submit').disabled = true;
+      try {
+        if (mode === 'in') await signIn($('email').value, $('password').value);
+        else await signUp($('name').value, $('email').value, $('password').value);
+        location.href = 'dashboard.html';
+      } catch (ex) {
+        $('err').textContent = ex.message;
+      } finally {
+        $('submit').disabled = false;
+      }
+    };
+
+    const radar = createRadar($('sideRadar'));
+    const d = new DemoDevice();
+    d.addEventListener('telemetry', (e) => radar.update(e.detail));
+    d.connect();
+  </script>
+</body>
+</html>

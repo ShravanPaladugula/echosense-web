@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Dashboard · EchoSense</title>
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@200..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <a class="logo" href="index.html"><img class="logo-mark" src="img/logo.svg" alt=""> EchoSense</a>
+      <div class="spacer"></div>
+      <div class="dash-bar">
+        <span class="pill" id="connPill"><span class="dot"></span><span id="connText">Not connected</span></span>
+        <button class="btn primary small" id="connectBtn">Connect device</button>
+        <button class="btn small" id="reconnectBtn" hidden>Reconnect</button>
+        <button class="btn small" id="demoBtn">Demo mode</button>
+        <div class="user-menu">
+          <button class="avatar" id="avatar" aria-label="Account" style="border:0;cursor:pointer">?</button>
+          <div class="menu" id="menu">
+            <div class="who"><b id="whoName"></b><div class="faint small" id="whoEmail"></div></div>
+            <button id="menuHelp">How to connect</button>
+            <button id="menuExport">Export session CSV</button>
+            <button id="menuSignOut">Sign out</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <main class="wrap">
+    <div class="banner" id="btBanner" hidden></div>
+
+    <div class="banner alt" id="profileBar" hidden>
+      <span id="profileBarText"></span>
+      <span class="banner-actions">
+        <button class="btn small" id="profileApply">Apply to this cap</button>
+        <button class="btn small ghost" id="profileDismiss">Not now</button>
+      </span>
+    </div>
+
+    <div class="grid">
+      <!-- live view -->
+      <section class="card span-8">
+        <div class="card-head"><h3>Live direction</h3><span class="badge" id="stateBadge">OFFLINE</span></div>
+        <div class="live">
+          <div id="radar"></div>
+          <div>
+            <div class="state-big" id="stateBig">Connect your cap</div>
+            <div class="state-sub" id="stateSub">Press Connect device, or try Demo mode.</div>
+            <button class="btn small ghost" id="helpBtn" style="margin-bottom:18px">How to connect</button>
+            <div class="bars" id="bars"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- quick controls -->
+      <section class="card span-4">
+        <div class="card-head"><h3>Controls</h3></div>
+        <div class="quick">
+          <button class="btn" id="pauseBtn" disabled>Pause</button>
+          <button class="btn" id="selfTestBtn" disabled>Self-test</button>
+          <button class="btn" id="setFrontBtn" disabled title="Use the current talker's direction as FRONT">Set front</button>
+          <button class="btn" id="flipBtn" disabled>Flip direction</button>
+        </div>
+        <button class="btn primary" id="wizardBtn" style="width:100%;margin-top:12px" disabled>Guided calibration</button>
+        <dl class="kv" style="margin-top:18px">
+          <dt>Device</dt><dd id="kvName">-</dd>
+          <dt>Firmware</dt><dd id="kvFw">-</dd>
+          <dt>Mic (XVF3800)</dt><dd id="kvXvf">-</dd>
+          <dt>Motor drivers</dt><dd id="kvDrv">-</dd>
+          <dt>Raw mic angle</dt><dd id="kvRaw">-</dd>
+          <dt>Front offset</dt><dd id="kvFront">-</dd>
+        </dl>
+      </section>
+
+      <!-- haptics settings -->
+      <section class="card span-6">
+        <div class="card-head"><h3>Haptics</h3><span class="sub" id="saveState">Saved on device</span></div>
+        <div class="ctl">
+          <div class="ctl-label">Profile</div>
+          <div class="seg" id="profileSeg">
+            <button data-p="subtle">Subtle</button><button data-p="normal">Normal</button><button data-p="strong">Strong</button>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Strength <b id="intensityVal">80%</b></div>
+          <input type="range" id="intensity" min="10" max="100" step="5" value="80" disabled>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">Speech sensitivity</div>
+          <div class="seg" id="sensSeg">
+            <button data-v="0">Fast</button><button data-v="1">Normal</button><button data-v="2">Strict</button>
+          </div>
+        </div>
+        <div class="ctl">
+          <div class="ctl-label">In-between directions</div>
+          <div class="seg" id="mixSeg">
+            <button data-v="0">Blend two motors</button><button data-v="1">Nearest motor</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="card span-6">
+        <div class="card-head"><h3>Per-motor balance</h3><span class="sub">Match how strong each one feels</span></div>
+        <div id="gains"></div>
+        <div class="row-actions">
+          <button class="btn small" id="saveProfileBtn" disabled>Save these to my account</button>
+          <button class="btn small ghost" id="resetBtn" disabled>Factory reset device</button>
+        </div>
+      </section>
+
+      <!-- timeline -->
+      <section class="card span-7">
+        <div class="card-head"><h3>Activity</h3><span class="sub">Last 60 seconds</span></div>
+        <canvas class="timeline" id="timeline"></canvas>
+        <div class="stats">
+          <div class="stat"><b id="stEvents">0</b><span>speech events</span></div>
+          <div class="stat"><b id="stTalk">0s</b><span>speech time</span></div>
+          <div class="stat"><b id="stTop">-</b><span>most common side</span></div>
+          <div class="stat"><b id="stFaults">0</b><span>mic faults</span></div>
+        </div>
+      </section>
+
+      <!-- captions -->
+      <section class="card span-5">
+        <div class="card-head"><h3>Captions</h3><button class="btn small" id="capBtn">Start captions</button></div>
+        <div class="captions" id="captions" aria-live="polite"><span class="faint">Captions appear here.</span></div>
+        <p class="faint small" style="margin:10px 0 0">Captions come from <b>this computer's or phone's microphone</b>, not the cap, so they may not match the direction shown. Your browser's speech service may use the internet.</p>
+      </section>
+
+      <!-- session history -->
+      <section class="card span-12">
+        <div class="card-head"><h3>Your sessions</h3><span class="sub" id="sessionsSub">Kept in this browser</span></div>
+        <div id="sessions"></div>
+      </section>
+    </div>
+  </main>
+
+  <!-- calibration wizard -->
+  <div class="modal-bg" id="wizard" role="dialog" aria-modal="true" aria-labelledby="wizTitle">
+    <div class="modal">
+      <div class="faint small" id="wizCount">Step 1 of 4</div>
+      <h2 id="wizTitle"></h2>
+      <div class="wiz-steps" id="wizSteps"><i></i><i></i><i></i><i></i></div>
+      <p class="muted" id="wizBody"></p>
+      <div id="wizExtra"></div>
+      <div class="actions">
+        <button class="btn ghost" id="wizCancel">Close</button>
+        <div class="wiz-right">
+          <button class="btn" id="wizAlt" hidden></button>
+          <button class="btn primary" id="wizNext">Next</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- how to connect -->
+  <div class="modal-bg" id="help" role="dialog" aria-modal="true" aria-labelledby="helpTitle">
+    <div class="modal">
+      <h2 id="helpTitle">How to connect</h2>
+      <div id="helpCheck" class="help-check"></div>
+
+      <h4>Connecting</h4>
+      <ol class="help-list">
+        <li>Switch the cap on. It runs its self-test, so you should feel front, right, back, then left.</li>
+        <li>Press <b>Connect device</b> above.</li>
+        <li>Pick <b>EchoSense</b> in the window your browser opens, then press Pair.</li>
+        <li>The dot next to the button turns green and the live view starts moving.</li>
+      </ol>
+
+      <h4>What you need</h4>
+      <ul class="help-list">
+        <li><b>Chrome or Edge</b> on Android, Windows, Mac or Linux. iPhone and iPad cannot do Web Bluetooth at all.</li>
+        <li>The page must be on <b>https</b>, or on <b>localhost</b>.</li>
+        <li>Bluetooth switched on, and the cap within a few metres.</li>
+      </ul>
+
+      <h4>If the cap doesn't appear</h4>
+      <ul class="help-list">
+        <li>A cap talks to <b>one device at a time</b>. Close any other tab, phone or laptop that still holds the connection.</li>
+        <li>Power the cap off and on, then press Connect again within a few seconds.</li>
+        <li>If the browser window opens but stays empty, the cap is out of range or not advertising.</li>
+      </ul>
+
+      <p class="muted" style="margin:18px 0 0">The cap does not need this page. It listens and buzzes on its own, with or without a phone nearby. This is only here to change settings and watch what it is doing.</p>
+      <div class="actions">
+        <span></span>
+        <button class="btn primary" id="helpClose">Got it</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script type="module" src="js/dashboard.js"></script>
+</body>
+</html>

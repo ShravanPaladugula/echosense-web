@@ -1,0 +1,18 @@
+{
+  "name": "echosense-tests",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Browser tests for the EchoSense companion site. Drives real Chrome via puppeteer-core; no Chromium download.",
+  "scripts": {
+    "check": "node check.js",
+    "flow": "node flow.js",
+    "features": "node features.js",
+    "ble": "node ble.js",
+    "setfront": "node setfront.js",
+    "shots": "node shots.js",
+    "all": "node check.js && node flow.js && node features.js && node ble.js && node setfront.js && node shots.js"
+  },
+  "devDependencies": {
+    "puppeteer-core": "^24.0.0"
+  }
+}

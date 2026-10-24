@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>EchoSense</title>
+  <meta name="description" content="EchoSense is a cap that turns the direction of nearby speech into touch.">
+  <link rel="icon" href="img/logo.svg" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Sora:wght@200..800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div class="wrap">
+      <a class="logo" href="index.html"><img class="logo-mark" src="img/logo.svg" alt=""> EchoSense</a>
+      <div class="nav-links">
+        <a href="#how">How it works</a>
+        <a href="#features">What it does</a>
+        <a href="#honest">Limits</a>
+      </div>
+      <div class="spacer"></div>
+      <a class="btn ghost small" href="login.html" id="navSignIn">Sign in</a>
+      <a class="btn primary small" href="dashboard.html?demo=1">Open the demo</a>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <h1 class="display">Feel where a voice is coming from.</h1>
+        <p class="lead">EchoSense is a cap that listens for speech around you and gently buzzes in that direction. Front, right, back, left, and everything in between. No phone, no internet, no buttons to press.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="login.html?mode=signup">Create an account</a>
+          <a class="btn" href="dashboard.html?demo=1">See it work</a>
+        </div>
+        <p class="hero-note">For people who are deaf or hard of hearing, and anyone who wants to notice when someone starts talking to them.</p>
+      </div>
+      <div>
+        <div class="hero-visual" id="heroRadar" aria-hidden="true"></div>
+        <div class="readout">
+          <b id="roWord">Listening</b>
+          <span class="deg" id="roDeg"></span>
+          <span class="sim">Simulated</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="band" aria-label="Live direction and motor levels">
+    <div class="wrap">
+      <div class="band-head">
+        <h2>What the cap is sending, right now</h2>
+        <p>Bearing of whoever is talking, and what each of the four motors is doing about it. <span class="sim">Simulated</span></p>
+      </div>
+      <canvas class="waveband" id="waveBand"></canvas>
+    </div>
+  </section>
+
+  <section class="block" id="how">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="display">Sound in, touch out, in a fraction of a second.</h2>
+        <div class="sh-aside">
+          <span class="idx">01</span>
+          <p>Everything runs on the device you wear. This website is only for settings.</p>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="num">01</div>
+          <h3>Listen</h3>
+          <p>A 4-microphone array on top of the cap detects speech and estimates which way it comes from, using its built-in voice processor.</p>
+        </div>
+        <div class="step">
+          <div class="num">02</div>
+          <h3>Decide</h3>
+          <p>An ESP32-S3 filters out jitter, waits out pauses between words, and ignores directions that jump around too much to trust.</p>
+        </div>
+        <div class="step">
+          <div class="num">03</div>
+          <h3>Feel</h3>
+          <p>Four small motors around the headband buzz toward the speaker. Halfway between two motors, both buzz together.</p>
+        </div>
+      </div>
+
+      <figure class="blend">
+        <figcaption>
+          <h3 class="display">Four motors, but not four directions.</h3>
+          <p>These frames are drawn by calling the same mixing the firmware runs, so the percentages underneath are the levels the motors really get. A voice between two motors drives both, and the direction stays smooth instead of snapping to the nearest corner.</p>
+        </figcaption>
+        <div class="strip" id="blendStrip"></div>
+      </figure>
+    </div>
+  </section>
+
+  <section class="block" id="features">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="display">Built to be calm, clear and yours.</h2>
+        <div class="sh-aside">
+          <span class="idx">02</span>
+          <p>Every setting below lives on the cap itself, not on a server.</p>
+        </div>
+      </div>
+      <dl class="spec">
+        <div>
+          <dt>Any direction, smoothly</dt>
+          <dd>Blends neighbouring motors for in-between angles, or switch to "nearest motor" if that feels clearer.</dd>
+        </div>
+        <div>
+          <dt>Speech only</dt>
+          <dd>Reacts to voices detected by the mic's speech detector, not every bang and hum in the room.</dd>
+        </div>
+        <div>
+          <dt>Calibrated to you</dt>
+          <dd>Set which way is front, flip direction, and tune each motor's strength. Saved on the device.</dd>
+        </div>
+        <div>
+          <dt>One-touch pause</dt>
+          <dd>A single button pauses everything. Hold it to set front while someone talks ahead of you.</dd>
+        </div>
+        <div>
+          <dt>Live captions</dt>
+          <dd>The dashboard can caption speech using your phone or laptop microphone, side by side with direction.</dd>
+        </div>
+        <div>
+          <dt>Standalone and private</dt>
+          <dd>No cloud, no audio recording. Close the app and the cap keeps working exactly the same.</dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="block" id="honest">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 class="display">What EchoSense is, and isn't.</h2>
+        <div class="sh-aside">
+          <span class="idx">03</span>
+          <p>Worth being straight about, because this is a prototype and people would be relying on it.</p>
+        </div>
+      </div>
+      <div class="honest">
+        <div class="card">
+          <h3>It does</h3>
+          <ul>
+            <li>Point you toward one active talker at a time, on a flat circle around your head.</li>
+            <li>Stop buzzing when people stop talking, or when you pause it.</li>
+            <li>Show an error pattern instead of guessing, if the microphone stops answering.</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>It doesn't</h3>
+          <ul>
+            <li>Tell distance, height, or who is speaking.</li>
+            <li>Reliably separate two people talking at once.</li>
+            <li>Replace a hearing aid, or warn about alarms and traffic. It is a research prototype.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block">
+    <div class="wrap">
+      <div class="cta-band">
+        <h2 class="display">Pair your EchoSense in a minute.</h2>
+        <p>Open the dashboard in Chrome, press Connect, and calibrate with a friend.</p>
+        <div class="cta-row" style="justify-content:center">
+          <a class="btn primary" href="login.html?mode=signup">Get started</a>
+          <a class="btn" href="dashboard.html?demo=1">Try the demo</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <span>EchoSense 2.0 — built at Cal Hacks 13.0</span>
+      <span>Prototype, not a medical device.</span>
+    </div>
+  </footer>
+
+  <script type="module">
+    import { createRadar, directionWords } from './js/radar.js';
+    import { DemoDevice, mix } from './js/device.js';
+    import { createWaveBand } from './js/waveband.js';
+    import { currentUser } from './js/auth.js';
+
+    const $ = (id) => document.getElementById(id);
+
+    if (currentUser()) {
+      const a = $('navSignIn');
+      a.textContent = 'Dashboard';
+      a.href = 'dashboard.html';
+    }
+
+    // The hero is a working instrument, driven by the same simulated device
+    // the dashboard demo uses. Labelled "Simulated" so nobody reads it as a
+    // live cap.
+    const radar = createRadar($('heroRadar'));
+    const band = createWaveBand($('waveBand'));
+    const demo = new DemoDevice();
+    demo.addEventListener('telemetry', (e) => {
+      const t = e.detail;
+      radar.update(t);
+      band.push(t);
+      const talking = t.state === 'SPEECH' && t.angle >= 0;
+      $('roWord').textContent = talking ? directionWords(t.angle).replace('-', ' ') : 'Listening';
+      $('roDeg').textContent = talking ? t.angle + '°' : 'nobody talking';
+    });
+    demo.connect();
+
+    // Same mixing as the firmware, so these numbers are computed, not written.
+    const PROBE = { intensity: 100, gains: [100, 100, 100, 100], sensitivity: 1, mix: 0 };
+    const AT = [[64, 16], [112, 64], [64, 112], [16, 64]];
+    $('blendStrip').innerHTML = [0, 30, 45, 60, 90].map((deg) => {
+      const m = mix(deg, PROBE);
+      const a = (deg - 90) * Math.PI / 180;
+      const dots = AT.map(([x, y], i) => {
+        const lvl = m[i] / 100;
+        const fill = lvl > 0 ? `color-mix(in srgb, var(--accent) ${Math.round(12 + lvl * 88)}%, var(--card-2))` : 'var(--card-2)';
+        return `<circle cx="${x}" cy="${y}" r="8.5" fill="${fill}" stroke="var(--line-2)" stroke-width="1.5"/>`;
+      }).join('');
+      return `<figure class="frame">
+        <svg viewBox="0 0 128 128" role="img" aria-label="Voice at ${deg} degrees drives the front motor at ${m[0]} percent and the right motor at ${m[1]} percent">
+          <circle cx="64" cy="64" r="30" fill="none" stroke="var(--line)"/>
+          <line x1="64" y1="64" x2="${(64 + 40 * Math.cos(a)).toFixed(1)}" y2="${(64 + 40 * Math.sin(a)).toFixed(1)}"
+                stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"/>
+          ${dots}
+        </svg>
+        <figcaption><b>${deg}°</b><span>front ${m[0]} &middot; right ${m[1]}</span></figcaption>
+      </figure>`;
+    }).join('');
+  </script>
+</body>
+</html>
