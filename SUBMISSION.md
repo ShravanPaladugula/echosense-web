@@ -53,6 +53,17 @@ FROM BEHIND             see you there
 As far as we know nobody has built this, because it needs both halves: a wearable that senses
 direction and an app that can line it up against speech in time.
 
+Raw speech recognition output is lowercase, unpunctuated and fragmented, so there is a
+**Tidy up** button that sends the transcript to **Claude Opus 5** for punctuation, casing and
+turn grouping. Claude is given a permission list, not an instruction to improve things: it may
+repunctuate and merge fragments from the same direction, and it may not add, remove, replace
+or reorder a single word, guess at unintelligible audio, infer who is speaking, or touch a
+direction the cap measured.
+
+The raw transcript is the record; the tidied version is a view of it. They coexist, "Show raw"
+is always one click away, and if the request fails the raw transcript is untouched and the app
+says why. The feature degrading can never take the transcript down with it.
+
 ### How we built it
 
 **Firmware** — **[YOU]**: toolchain, how the XVF3800 is wired, how you drive the motors, how
@@ -73,7 +84,15 @@ cap fails at the booth.
 
 **The fusion** — for each finished utterance, take the cap's bearings from that time window
 and compute the **circular mean**. Not the arithmetic mean: 350° and 10° average to 180°,
-which would point someone at exactly the wrong person.
+which would point someone at exactly the wrong person. This layer uses no AI at all, which is
+deliberate: it works with no API key and no network, so the core feature cannot be taken down
+by an outage at a judging table.
+
+**The tidy pass** — one Vercel serverless function calling Claude Opus 5 through the official
+Anthropic SDK, with structured output so the response is schema-checked rather than parsed out
+of prose. Run at low effort, because this is formatting and not reasoning. The API key lives
+in a server-side environment variable and never reaches the browser; the endpoint is POST
+only, same-origin, size-capped, and returns clean JSON errors rather than stack traces.
 
 **Tests** — seven scripts driving real Chrome through `puppeteer-core`, including two that
 stub browser APIs so hardware-dependent paths can be tested without hardware: one fakes
@@ -119,8 +138,6 @@ testable, demoable without the device, and still works if the cap dies at the ta
 
 ### What's next
 
-- Tidying the transcript with an LLM — punctuation and turn grouping only, never changing the
-  words.
 - Sharing a live session with a friend or interpreter over a link.
 - Vertical cues, and a way to say "two people are talking at once" instead of picking one.
 - Real testing with deaf and hard-of-hearing users. **[YOU]** — only claim this once it has
@@ -128,8 +145,9 @@ testable, demoable without the device, and still works if the cap dies at the ta
 
 ### Built with
 
-`esp32-s3` · `xvf3800` · `ble` · `web-bluetooth` · `web-speech-api` · `javascript` · `html` ·
-`css` · `canvas` · `svg` · `webcrypto` · `puppeteer` · `vercel`
+`esp32-s3` · `xvf3800` · `ble` · `web-bluetooth` · `web-speech-api` · `anthropic` ·
+`claude-opus-5` · `javascript` · `html` · `css` · `canvas` · `svg` · `webcrypto` ·
+`puppeteer` · `vercel`
 **[YOU]** — add your firmware language and toolchain.
 
 ---

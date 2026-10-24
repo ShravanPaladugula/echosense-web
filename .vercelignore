@@ -1,5 +1,6 @@
 tests/
 serve.py
 out/
+node_modules/
 *.bak
 SUBMISSION.md

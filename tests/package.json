@@ -10,8 +10,9 @@
     "ble": "node ble.js",
     "setfront": "node setfront.js",
     "shots": "node shots.js",
-    "all": "node check.js && node flow.js && node features.js && node ble.js && node setfront.js && node transcript.js && node shots.js",
-    "transcript": "node transcript.js"
+    "all": "node check.js && node flow.js && node features.js && node ble.js && node setfront.js && node transcript.js && node a11y.js && node shots.js",
+    "transcript": "node transcript.js",
+    "a11y": "node a11y.js"
   },
   "devDependencies": {
     "puppeteer-core": "^24.0.0"
