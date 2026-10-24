@@ -1,6 +1,7 @@
 import { currentUser, signOut, userData, saveUserData } from './auth.js';
 import { createRadar, directionWords } from './radar.js';
 import { BleDevice, DemoDevice, CMD, bluetoothSupported, bluetoothAvailable, describeBleError } from './device.js';
+import { createTranscript } from './transcript.js';
 
 const $ = (id) => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -542,62 +543,75 @@ function renderSessions() {
 }
 renderSessions();
 
-function exportCsv() {
-  if (!log.length) { toast('Nothing recorded yet. Connect first.'); return; }
-  const rows = ['time_iso,device_ms,state,voice,muted,uncertain,device_angle,raw_angle,front,right,back,left,error'];
-  for (const p of log) rows.push([new Date(p.time).toISOString(), p.ms, p.state, +p.voice, +p.muted, +p.uncertain, p.angle, p.raw, ...p.motors, p.error].join(','));
+function download(name, text, type) {
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([rows.join('\n')], { type: 'text/csv' }));
-  a.download = `echosense-session-${new Date(sessionStart).toISOString().slice(0, 19).replace(/:/g, '-')}.csv`;
+  a.href = URL.createObjectURL(new Blob([text], { type }));
+  a.download = name;
   a.click();
 }
 
-// ---------- captions (browser speech recognition, this device's mic) ----------
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-let rec = null;
-let capOn = false;
-if (!SR) {
-  $('capBtn').disabled = true;
-  $('captions').innerHTML = '<span class="faint">Captions need Chrome or Edge (speech recognition isn\'t available in this browser).</span>';
-}
-$('capBtn').onclick = () => (capOn ? stopCaptions() : startCaptions());
+function exportCsv() {
+  const stamp = new Date(sessionStart || Date.now()).toISOString().slice(0, 19).replace(/:/g, '-');
 
-function startCaptions() {
-  rec = new SR();
-  rec.continuous = true;
-  rec.interimResults = true;
-  rec.lang = navigator.language || 'en-US';
-  const box = $('captions');
-  box.innerHTML = '';
-  const interim = document.createElement('span');
-  interim.className = 'interim';
-  box.appendChild(interim);
-  rec.onresult = (e) => {
-    let text = '';
-    for (let i = e.resultIndex; i < e.results.length; i++) {
-      const r = e.results[i];
-      if (r.isFinal) {
-        const p = document.createElement('div');
-        p.textContent = r[0].transcript.trim();
-        box.insertBefore(p, interim);
-      } else text += r[0].transcript;
+  // the transcript exports as its own file: one row per spoken line, with the
+  // direction the cap reported and whether that direction was certain
+  const spoken = transcript.lines();
+  if (spoken.length) {
+    const rows = ['started_iso,ended_iso,direction,certain,device_angle,text'];
+    for (const l of spoken) {
+      rows.push([
+        new Date(l.startedAt).toISOString(),
+        new Date(l.endedAt).toISOString(),
+        l.label,
+        l.sure ? 1 : 0,
+        l.angle === undefined ? '' : l.angle,
+        '"' + l.text.replace(/"/g, '""') + '"',
+      ].join(','));
     }
-    interim.textContent = text;
-    box.scrollTop = box.scrollHeight;
-  };
-  rec.onerror = (e) => { if (e.error === 'not-allowed') { toast('Microphone permission was denied.'); stopCaptions(); } };
-  rec.onend = () => { if (capOn) rec.start(); };  // Chrome stops after silence; keep going
-  rec.start();
-  capOn = true;
-  $('capBtn').textContent = 'Stop captions';
-  $('capBtn').classList.add('on');
+    download('echosense-transcript-' + stamp + '.csv', rows.join('\n'), 'text/csv');
+  }
+
+  if (!log.length) {
+    if (!spoken.length) toast('Nothing recorded yet. Connect first.');
+    return;
+  }
+  const rows = ['time_iso,device_ms,state,voice,muted,uncertain,device_angle,raw_angle,front,right,back,left,error'];
+  for (const p of log) rows.push([new Date(p.time).toISOString(), p.ms, p.state, +p.voice, +p.muted, +p.uncertain, p.angle, p.raw, ...p.motors, p.error].join(','));
+  download('echosense-session-' + stamp + '.csv', rows.join('\n'), 'text/csv');
 }
-function stopCaptions() {
-  capOn = false;
-  rec?.stop();
-  $('capBtn').textContent = 'Start captions';
-  $('capBtn').classList.remove('on');
-}
+
+// ---------- transcript ----------
+// Words from this device's microphone, direction from the cap. The fusion is
+// local arithmetic in transcript.js - no API key, no network of its own.
+const transcript = createTranscript({
+  box: $('captions'),
+  btn: $('capBtn'),
+  getSamples: () => log,
+  isConnected: () => !!dev,
+  onError: toast,
+  onChange: (n, showing) => {
+    $('tidyBtn').disabled = n === 0 || showing === 'tidy';
+    $('rawBtn').hidden = showing !== 'tidy';
+  },
+});
+
+// Punctuation only. If this fails, or is not configured on the deployment, the
+// raw transcript carries on untouched - it is the record, this is a view of it.
+$('tidyBtn').onclick = async () => {
+  const btn = $('tidyBtn');
+  btn.disabled = true;
+  btn.textContent = 'Tidying…';
+  try {
+    await transcript.runTidy();
+    toast('Tidied. The words are unchanged - press Show raw to compare.');
+  } catch (e) {
+    toast(e.message);
+    btn.disabled = transcript.count() === 0;
+  } finally {
+    btn.textContent = 'Tidy up';
+  }
+};
+$('rawBtn').onclick = () => transcript.showRaw();
 
 enableControls(false);
 if (params.has('demo')) connect('demo');

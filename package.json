@@ -1,0 +1,29 @@
+{
+  "name": "echosense-web",
+  "version": "1.0.0",
+  "description": "EchoSense companion site. Static pages plus one serverless function for the transcript tidy pass.",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "dev": "python serve.py 8000",
+    "deploy": "vercel deploy --prod --yes"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ShravanPaladugula/echosense-web.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "bugs": {
+    "url": "https://github.com/ShravanPaladugula/echosense-web/issues"
+  },
+  "homepage": "https://github.com/ShravanPaladugula/echosense-web#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.3.0",
+    "zod": "^4.6.7"
+  },
+  "private": true
+}

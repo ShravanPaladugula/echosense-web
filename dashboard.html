@@ -127,11 +127,18 @@
         </div>
       </section>
 
-      <!-- captions -->
+      <!-- transcript -->
       <section class="card span-5">
-        <div class="card-head"><h3>Captions</h3><button class="btn small" id="capBtn">Start captions</button></div>
-        <div class="captions" id="captions" aria-live="polite"><span class="faint">Captions appear here.</span></div>
-        <p class="faint small" style="margin:10px 0 0">Captions come from <b>this computer's or phone's microphone</b>, not the cap, so they may not match the direction shown. Your browser's speech service may use the internet.</p>
+        <div class="card-head"><h3>Transcript</h3>
+          <span class="tr-actions">
+            <button class="btn small ghost" id="rawBtn" hidden>Show raw</button>
+            <button class="btn small" id="tidyBtn" disabled>Tidy up</button>
+            <button class="btn small" id="capBtn">Start transcript</button>
+          </span>
+        </div>
+        <p class="tr-lede">Direction comes from <b>the cap</b>. The words come from <b>this computer's or phone's microphone</b> &mdash; the cap cannot hear words.</p>
+        <div class="captions" id="captions" aria-live="polite"></div>
+        <p class="faint small" style="margin:10px 0 0">Recognising speech is your browser's job, and it may send audio over the internet to do it. A line reading &ldquo;direction unclear&rdquo; means the cap could not agree with itself while that was said &mdash; not that it was ignored.</p>
       </section>
 
       <!-- session history -->
